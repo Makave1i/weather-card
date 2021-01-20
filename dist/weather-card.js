@@ -210,7 +210,7 @@ class WeatherCard extends LitElement {
            ${stateObj.attributes.wind_speed}<span class="unit">
             ${this.getUnit("length")}/h
           </span>
-          <ha-icon icon="mdi:navigation" style="rotate(${wind_bearing}deg)"></ha-icon>
+          <ha-icon icon="mdi:navigation" style="transform: rotate(${wind_bearing}deg)"></ha-icon>
         </li>
         <li>
           <ha-icon icon="mdi:gauge"></ha-icon>
