@@ -187,10 +187,15 @@ class WeatherCard extends LitElement {
     const sun = this.hass.states["sun.sun"];
     let next_rising;
     let next_setting;
+    let wind_bearing;
 
     if (sun) {
       next_rising = new Date(sun.attributes.next_rising);
       next_setting = new Date(sun.attributes.next_setting);
+    }
+
+    if (stateObj.attributes.wind_bearing) {
+      wind_bearing = stateObj.attributes.wind_bearing + 180
     }
 
     this.numberElements++;
@@ -202,12 +207,10 @@ class WeatherCard extends LitElement {
           ${stateObj.attributes.humidity}<span class="unit"> % </span>
         </li>
         <li>
-          <ha-icon icon="mdi:weather-windy"></ha-icon> ${windDirections[
-            parseInt((stateObj.attributes.wind_bearing + 11.25) / 22.5)
-          ]}
-          ${stateObj.attributes.wind_speed}<span class="unit">
+           ${stateObj.attributes.wind_speed}<span class="unit">
             ${this.getUnit("length")}/h
           </span>
+          <ha-icon icon="mdi:navigation" style="rotate(${wind_bearing}deg)"></ha-icon>
         </li>
         <li>
           <ha-icon icon="mdi:gauge"></ha-icon>
