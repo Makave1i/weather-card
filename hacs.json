@@ -3,5 +3,6 @@
     "render_readme": true,
     "filename": "weather-card/weather-card.js",
     "content_in_root": false,
+    "resources": true,
     "domains": ["lovelace"]
 }
