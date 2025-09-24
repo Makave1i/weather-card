@@ -348,21 +348,21 @@ class WeatherCard extends LitElement {
       <ul class="variations ${this.numberElements > 1 ? "spacer" : ""}">
         <li>
           <ha-icon icon="mdi:water-percent"></ha-icon>
-          ${Math.round(stateObj.attributes.humidity * 10) / 10}<span class="unit"> % </span>
+          ${Math.round(stateObj.attributes.humidity)}<span class="unit"> % </span>
         </li>
         <li>
-           ${Math.round(stateObj.attributes.wind_speed * 10) / 10}<span class="unit">
+           ${Math.round(stateObj.attributes.wind_speed)}<span class="unit">
             ${this.getUnit("length")}/h
           </span>
           <ha-icon icon="mdi:navigation" style="transform: rotate(${wind_bearing}deg)"></ha-icon>
         </li>
         <li>
           <ha-icon icon="mdi:gauge"></ha-icon>
-          ${Math.round(stateObj.attributes.pressure * 10) / 10}
+          ${Math.round(stateObj.attributes.pressure)}
           <span class="unit"> ${this.getUnit("air_pressure")} </span>
         </li>
         <li>
-          <ha-icon icon="mdi:weather-windy"></ha-icon> ${Math.round(stateObj.attributes.wind_gust_speed * 10) / 10}<span class="unit"> ${this.getUnit("length")}/h </span>
+          <ha-icon icon="mdi:weather-windy"></ha-icon> ${Math.round(stateObj.attributes.wind_gust_speed)}<span class="unit"> ${this.getUnit("length")}/h </span>
         </li>
         ${next_rising
           ? html`
@@ -558,6 +558,7 @@ class WeatherCard extends LitElement {
       .feels-like {
         font-size: 1em;
         color: var(--secondary-text-color);
+        margin-top: -0.2em;
       }
 
       @media (max-width: 460px) {
@@ -585,7 +586,7 @@ class WeatherCard extends LitElement {
         font-weight: 300;
         color: var(--primary-text-color);
         list-style: none;
-        padding: 0 1em;
+        padding: 1em 1em 0 1em;
         margin: 0;
       }
 
