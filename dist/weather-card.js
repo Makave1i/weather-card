@@ -94,6 +94,34 @@ function hasConfigOrEntityChanged(element, changedProps) {
   return true;
 }
 
+const getLocale = async (lang) => {
+  try {
+    switch (lang) {
+      case "uk":
+        return (await import("date-fns/locale/uk/index.js")).default;
+      case "de":
+        return (await import("date-fns/locale/de/index.js")).default;
+      case "fr":
+        return (await import("date-fns/locale/fr/index.js")).default;
+      case "es":
+        return (await import("date-fns/locale/es/index.js")).default;
+      case "it":
+        return (await import("date-fns/locale/it/index.js")).default;
+      case "pl":
+        return (await import("date-fns/locale/pl/index.js")).default;
+      // fallback
+      default:
+        return (await import("date-fns/locale/en-US/index.js")).default;
+    }
+  } catch (e) {
+    console.warn("Could not load locale for", lang, e);
+    return (await import("date-fns/locale/en-US/index.js")).default;
+  }
+}
+
+
+
+
 class WeatherCard extends LitElement {
   static get properties() {
     return {
@@ -147,7 +175,15 @@ class WeatherCard extends LitElement {
     if (!config.entity) {
       throw new Error("Please define a weather entity");
     }
-    this._config = { forecast_type: "daily", ...config };
+
+    this._config = {
+      ...config,
+      forecast_type: "daily",
+      time_pattern: config.time_pattern || "HH:mm",
+      time_format: config.time_format || 24,
+      date_pattern: config.date_pattern || "ccc, d.MM.yy",
+      locale: config.locale || null,
+    };
   }
 
   _needForecastSubscription() {
@@ -205,13 +241,33 @@ class WeatherCard extends LitElement {
     return hasConfigOrEntityChanged(this, changedProps);
   }
 
-  updated(changedProps) {
+  async updated(changedProps) {
     if (!this.hass || !this._config) {
       return;
     }
     if (changedProps.has("_config") || !this._subscribed) {
       this._subscribeForecastEvents();
     }
+    const now = new Date();
+    this._datetime = await this.formatDateTime(now);
+  }
+
+  async formatDateTime(date) {
+    if (!this._locale) {
+      this._locale = await getLocale();
+    }
+
+    const dateStr = format(date, this._config.date_pattern, {
+      locale: this._locale,
+    });
+
+    let timePattern = this._config.time_pattern;
+    if (this._config.time_format === 12) {
+      timePattern = timePattern.replace("HH", "hh").replace("H", "h") + " a";
+    }
+    const timeStr = format(date, timePattern, { locale: this._locale });
+
+    return `${dateStr} - ${timeStr}`;
   }
 
   render() {
@@ -263,17 +319,6 @@ class WeatherCard extends LitElement {
   renderCurrent(stateObj) {
     this.numberElements++;
 
-    const now = new Date();
-    const lang = this.hass.selectedLanguage || this.hass.language;
-    const datetime = now.toLocaleDateString(lang, {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    }) + " - " + now.toLocaleTimeString(lang, {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
     return html`
       <div class="current ${this.numberElements > 1 ? "spacer" : ""}">
         <span
@@ -290,7 +335,7 @@ class WeatherCard extends LitElement {
         
         <!-- new absolute block -->
         <div class="temp-wrapper">
-          <div class="datetime">${datetime}</div>
+          <div class="datetime">${this._datetime || ""}</div>
           <div class="temp-row">
             <span class="temp">
               ${this.getUnit("temperature") == "°F"
@@ -512,16 +557,16 @@ class WeatherCard extends LitElement {
 
       .temp-wrapper {
         position: absolute;
-        right: 1em;
-        top: 0;
+        right: 2em;
+        top: 1em;
         text-align: right;
       }
 
       .datetime {
-        font-size: 0.9em;
-        font-weight: 300;
+        font-size: 1em;
+        font-weight: 200;
         color: var(--secondary-text-color);
-        margin-bottom: 0.3em;
+        
       }
 
       .temp-row {
@@ -543,7 +588,6 @@ class WeatherCard extends LitElement {
         vertical-align: super;
         color: var(--primary-text-color);
         margin-left: 4px;
-        margin-top: 0.3em;
       }
 
       @media (max-width: 460px) {
