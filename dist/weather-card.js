@@ -277,6 +277,7 @@ class WeatherCard extends LitElement {
     ) + " • " + now.toLocaleTimeString(
       lang, {hour: "2-digit", minute: "2-digit"}
     );
+    const feelsLikeLabel = lang === "uk" ? "Відчувається як" : "Feels like";
     
 
     return html`
@@ -298,12 +299,17 @@ class WeatherCard extends LitElement {
           <div class="datetime">${datetime || ""}</div>
           <div class="temp-row">
             <span class="temp">
-              ${this.getUnit("temperature") == "°F"
-                ? Math.round(stateObj.attributes.temperature)
-                : stateObj.attributes.temperature}
+              ${Math.round(stateObj.attributes.temperature)}
             </span>
             <span class="tempc">${this.getUnit("temperature")}</span>
           </div>
+          ${stateObj.attributes.apparent_temperature !== undefined
+          ? html`
+              <div class="feels-like">
+                ${feelsLikeLabel}: ${Math.round(stateObj.attributes.apparent_temperature)}°
+              </div>
+            `
+          : ""}
         </div>
       </div>
     `;
@@ -342,22 +348,21 @@ class WeatherCard extends LitElement {
       <ul class="variations ${this.numberElements > 1 ? "spacer" : ""}">
         <li>
           <ha-icon icon="mdi:water-percent"></ha-icon>
-          ${stateObj.attributes.humidity}<span class="unit"> % </span>
+          ${Math.round(stateObj.attributes.humidity * 10) / 10}<span class="unit"> % </span>
         </li>
         <li>
-           ${stateObj.attributes.wind_speed}<span class="unit">
+           ${Math.round(stateObj.attributes.wind_speed * 10) / 10}<span class="unit">
             ${this.getUnit("length")}/h
           </span>
           <ha-icon icon="mdi:navigation" style="transform: rotate(${wind_bearing}deg)"></ha-icon>
         </li>
         <li>
           <ha-icon icon="mdi:gauge"></ha-icon>
-          ${stateObj.attributes.pressure}
+          ${Math.round(stateObj.attributes.pressure * 10) / 10}
           <span class="unit"> ${this.getUnit("air_pressure")} </span>
         </li>
         <li>
-          <ha-icon icon="mdi:weather-fog"></ha-icon> ${stateObj.attributes
-            .visibility}<span class="unit"> ${this.getUnit("length")} </span>
+          <ha-icon icon="mdi:weather-windy"></ha-icon> ${Math.round(stateObj.attributes.wind_gust_speed * 10) / 10}<span class="unit"> ${this.getUnit("length")}/h </span>
         </li>
         ${next_rising
           ? html`
@@ -524,7 +529,7 @@ class WeatherCard extends LitElement {
 
       .datetime {
         font-size: 1em;
-        font-weight: 200;
+        font-weight: 300;
         color: var(--secondary-text-color);
         
       }
@@ -537,7 +542,7 @@ class WeatherCard extends LitElement {
 
       .temp {
         font-weight: 300;
-        font-size: 4em;
+        font-size: 3em;
         color: var(--primary-text-color);
         line-height: 1;
       }
@@ -548,6 +553,11 @@ class WeatherCard extends LitElement {
         vertical-align: super;
         color: var(--primary-text-color);
         margin-left: 4px;
+      }
+
+      .feels-like {
+        font-size: 1em;
+        color: var(--secondary-text-color);
       }
 
       @media (max-width: 460px) {
