@@ -263,6 +263,17 @@ class WeatherCard extends LitElement {
   renderCurrent(stateObj) {
     this.numberElements++;
 
+    const now = new Date();
+    const lang = this.hass.selectedLanguage || this.hass.language;
+    const datetime = now.toLocaleDateString(lang, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    }) + " - " + now.toLocaleTimeString(lang, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
     return html`
       <div class="current ${this.numberElements > 1 ? "spacer" : ""}">
         <span
@@ -274,14 +285,21 @@ class WeatherCard extends LitElement {
           >${stateObj.state}
         </span>
         ${this._config.name
-          ? html` <span class="title"> ${this._config.name} </span> `
+          ? html`<span class="title"> ${this._config.name} </span>`
           : ""}
-        <span class="temp"
-          >${this.getUnit("temperature") == "°F"
-            ? Math.round(stateObj.attributes.temperature)
-            : stateObj.attributes.temperature}</span
-        >
-        <span class="tempc"> ${this.getUnit("temperature")}</span>
+        
+        <!-- new absolute block -->
+        <div class="temp-wrapper">
+          <div class="datetime">${datetime}</div>
+          <div class="temp-row">
+            <span class="temp">
+              ${this.getUnit("temperature") == "°F"
+                ? Math.round(stateObj.attributes.temperature)
+                : stateObj.attributes.temperature}
+            </span>
+            <span class="tempc">${this.getUnit("temperature")}</span>
+          </div>
+        </div>
       </div>
     `;
   }
@@ -492,12 +510,31 @@ class WeatherCard extends LitElement {
         color: var(--primary-text-color);
       }
 
+      .temp-wrapper {
+        position: absolute;
+        right: 1em;
+        top: 0;
+        text-align: right;
+      }
+
+      .datetime {
+        font-size: 0.9em;
+        font-weight: 300;
+        color: var(--secondary-text-color);
+        margin-bottom: 0.3em;
+      }
+
+      .temp-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+      }
+
       .temp {
         font-weight: 300;
         font-size: 4em;
         color: var(--primary-text-color);
-        position: absolute;
-        right: 1em;
+        line-height: 1;
       }
 
       .tempc {
@@ -505,10 +542,8 @@ class WeatherCard extends LitElement {
         font-size: 1.5em;
         vertical-align: super;
         color: var(--primary-text-color);
-        position: absolute;
-        right: 1em;
-        margin-top: -14px;
-        margin-right: 7px;
+        margin-left: 4px;
+        margin-top: 0.3em;
       }
 
       @media (max-width: 460px) {
